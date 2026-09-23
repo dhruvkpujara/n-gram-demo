@@ -1,11 +1,1069 @@
 <!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>N-Gram Studio | Interactive Visual NLP Guide</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head><body class="min-h-screen bg-slate-900 text-slate-100 font-sans p-8">
-<div class="max-w-3xl mx-auto bg-slate-800/50 border border-slate-700 rounded-2xl p-8"><h1 class="text-3xl font-bold">N-Gram Studio</h1><p class="mt-2 text-slate-400">The uploaded app is ready for GitHub Pages.</p></div>
-</body></html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N-Gram Studio | Interactive Visual NLP Guide</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .highlight-ngram {
+      background-color: rgba(234, 179, 8, 0.35);
+      border-bottom: 2px solid #eab308;
+      border-radius: 2px;
+      padding: 0 2px;
+      font-weight: 600;
+    }
+    .active-token {
+      transition: all 0.2s ease;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-x-hidden antialiased">
+
+  <!-- Header Bar -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-cyan-500/20">
+          <i class="fa-solid font-mono">N</i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            N-Gram Studio
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">AI & NLP Basics</span>
+          </h1>
+          <p class="text-xs text-slate-400">Interactive Visualizer for Unigrams, Bigrams & N-Grams</p>
+        </div>
+      </div>
+
+      <!-- Quick Concept Toggles -->
+      <div class="hidden md:flex items-center space-x-2 text-xs">
+        <button onclick="setN(1)" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          Unigram (N=1)
+        </button>
+        <button onclick="setN(2)" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+          Bigram (N=2)
+        </button>
+        <button onclick="setN(3)" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+          Trigram (N=3)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Top Navigation Tabs -->
+    <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-3">
+      <nav class="flex space-x-2 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80">
+        <button id="tab-corpus" onclick="switchTab('corpus')" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 bg-indigo-600 text-white shadow-md">
+          <i class="fa-solid fa-file-lines text-xs"></i> Corpus & Settings
+        </button>
+        <button id="tab-visualizer" onclick="switchTab('visualizer')" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/50">
+          <i class="fa-solid fa-sliders text-xs"></i> Sliding Window
+        </button>
+        <button id="tab-analysis" onclick="switchTab('analysis')" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/50">
+          <i class="fa-solid fa-chart-column text-xs"></i> Frequency & Charts
+        </button>
+        <button id="tab-predictor" onclick="switchTab('predictor')" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/50">
+          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Next-Word LM
+        </button>
+        <button id="tab-guide" onclick="switchTab('guide')" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/50">
+          <i class="fa-solid fa-graduation-cap text-xs"></i> Concepts Guide
+        </button>
+      </nav>
+
+      <!-- Global N-Gram Selector Slider -->
+      <div class="flex items-center gap-3 bg-slate-950/60 px-4 py-2 rounded-xl border border-slate-800/80">
+        <label for="n-slider" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+          <span>Selected N:</span>
+          <span id="n-value-badge" class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-mono text-sm">2</span>
+        </label>
+        <input id="n-slider" type="range" min="1" max="5" value="2" oninput="updateN(this.value)" class="w-24 accent-indigo-500 cursor-pointer">
+        <span class="text-[10px] text-slate-500 font-mono" id="n-type-label">(Bigram)</span>
+      </div>
+    </div>
+
+    <!-- TAB 1: Corpus Selection & Upload -->
+    <section id="section-corpus" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Panel: Preset Selector & File Upload -->
+        <div class="lg:col-span-1 space-y-6">
+          <!-- Preset Corpus Picker -->
+          <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+              <i class="fa-solid fa-book-bookmark text-cyan-400"></i>
+              Select Sample Corpus
+            </h3>
+            <p class="text-xs text-slate-400">Choose from curated text examples or upload your own dataset.</p>
+            
+            <div class="space-y-2">
+              <button onclick="loadPreset('nlp_basics')" class="w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-700/60 bg-slate-900/60 hover:bg-slate-700/50 transition flex items-center justify-between group">
+                <div>
+                  <div class="text-xs font-medium text-slate-200 group-hover:text-cyan-300">🤖 AI & NLP Definitions</div>
+                  <div class="text-[11px] text-slate-400">Introductory concepts on language processing</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-cyan-400"></i>
+              </button>
+
+              <button onclick="loadPreset('shakespeare')" class="w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-700/60 bg-slate-900/60 hover:bg-slate-700/50 transition flex items-center justify-between group">
+                <div>
+                  <div class="text-xs font-medium text-slate-200 group-hover:text-cyan-300">🎭 Shakespeare Quotes</div>
+                  <div class="text-[11px] text-slate-400">Hamlet, Macbeth & Romeo excerpts</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-cyan-400"></i>
+              </button>
+
+              <button onclick="loadPreset('speech')" class="w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-700/60 bg-slate-900/60 hover:bg-slate-700/50 transition flex items-center justify-between group">
+                <div>
+                  <div class="text-xs font-medium text-slate-200 group-hover:text-cyan-300">🎙️ "I Have a Dream" Excerpt</div>
+                  <div class="text-[11px] text-slate-400">Rhythmic repetitive speech patterns</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-cyan-400"></i>
+              </button>
+
+              <button onclick="loadPreset('rhyme')" class="w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-700/60 bg-slate-900/60 hover:bg-slate-700/50 transition flex items-center justify-between group">
+                <div>
+                  <div class="text-xs font-medium text-slate-200 group-hover:text-cyan-300"> nursery Nursery Rhymes</div>
+                  <div class="text-[11px] text-slate-400">Simple repetitive child lyrics</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-cyan-400"></i>
+              </button>
+            </div>
+
+            <div class="pt-2 border-t border-slate-700/50">
+              <label class="block text-xs font-medium text-slate-300 mb-2">Upload Custom Corpus (.txt)</label>
+              <div class="relative flex items-center justify-center border-2 border-dashed border-slate-700 rounded-xl p-4 hover:border-indigo-500 transition cursor-pointer bg-slate-900/40 text-center">
+                <input type="file" id="file-input" accept=".txt" onchange="handleFileUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                <div class="space-y-1">
+                  <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400"></i>
+                  <p class="text-xs text-slate-300 font-medium">Click to upload or drag & drop</p>
+                  <p class="text-[10px] text-slate-500">Plain text files supported</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preprocessing Options -->
+          <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+              <i class="fa-solid fa-gears text-indigo-400"></i>
+              Preprocessing Pipeline
+            </h3>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-slate-800 cursor-pointer hover:border-slate-700">
+                <span class="text-slate-300">Lowercase text</span>
+                <input type="checkbox" id="prep-lowercase" checked onchange="reprocessCorpus()" class="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-800">
+              </label>
+
+              <label class="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-slate-800 cursor-pointer hover:border-slate-700">
+                <span class="text-slate-300">Strip Punctuation</span>
+                <input type="checkbox" id="prep-punctuation" checked onchange="reprocessCorpus()" class="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-800">
+              </label>
+
+              <label class="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-slate-800 cursor-pointer hover:border-slate-700">
+                <span class="text-slate-300">Add Sentence Boundaries (&lt;s&gt;, &lt;/s&gt;)</span>
+                <input type="checkbox" id="prep-padding" onchange="reprocessCorpus()" class="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-800">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Editor & Quick Stats -->
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 flex flex-col h-full min-h-[420px] space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-indigo-400"></i>
+                Corpus Text Editor
+              </h3>
+              <div class="flex items-center gap-2 text-xs">
+                <span id="stat-words-badge" class="px-2.5 py-1 rounded-md bg-slate-900 text-slate-300 font-mono border border-slate-700">0 Tokens</span>
+                <span id="stat-vocab-badge" class="px-2.5 py-1 rounded-md bg-slate-900 text-slate-300 font-mono border border-slate-700">0 Unique Vocab</span>
+              </div>
+            </div>
+
+            <textarea id="corpus-textarea" oninput="onCorpusTextChange()" class="w-full flex-1 bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 transition resize-y min-h-[260px]" placeholder="Type or paste your custom text corpus here..."></textarea>
+
+            <div class="flex items-center justify-between pt-2">
+              <span class="text-[11px] text-slate-400">Changes update automatically across all visualizer modules.</span>
+              <button onclick="reprocessCorpus()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center gap-2">
+                <i class="fa-solid fa-rotate"></i> Re-tokenize Corpus
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: Sliding Window Interactive Stepper -->
+    <section id="section-visualizer" class="hidden space-y-6">
+      <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 space-y-6">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-cyan-400"></i>
+              Interactive Token Sliding Window
+            </h2>
+            <p class="text-xs text-slate-400">Observe how an N-gram window slides across sequential tokens one step at a time.</p>
+          </div>
+
+          <!-- Controls -->
+          <div class="flex items-center gap-2">
+            <button id="btn-prev-step" onclick="stepWindow(-1)" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition">
+              <i class="fa-solid fa-backward"></i> Prev
+            </button>
+            <button id="btn-play-pause" onclick="togglePlayWindow()" class="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-cyan-600/20">
+              <i id="play-icon" class="fa-solid fa-play"></i>
+              <span id="play-text">Auto Play</span>
+            </button>
+            <button id="btn-next-step" onclick="stepWindow(1)" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition">
+              Next <i class="fa-solid fa-forward"></i>
+            </button>
+            <button onclick="resetWindowStep()" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-400 text-xs transition" title="Reset Step">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Slider -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs text-slate-400 font-mono">
+            <span>Step <span id="window-step-num" class="text-cyan-400 font-bold">1</span> of <span id="window-max-steps">100</span></span>
+            <span id="window-ngram-preview" class="text-indigo-300 font-bold">"sample ngram"</span>
+          </div>
+          <input id="window-step-range" type="range" min="0" max="100" value="0" oninput="setWindowStep(parseInt(this.value))" class="w-full accent-cyan-500 cursor-pointer">
+        </div>
+
+        <!-- Token Sequence Visualizer Box -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 min-h-[160px] max-h-[300px] overflow-y-auto">
+          <div id="token-stream-container" class="flex flex-wrap gap-2 items-center leading-relaxed font-mono text-sm">
+            <!-- Tokens rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Extracted N-Grams Log -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+            <div class="text-xs font-medium text-slate-400">Current Window Tokens</div>
+            <div id="window-current-tokens" class="text-sm font-mono font-bold text-cyan-400 mt-1">--</div>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+            <div class="text-xs font-medium text-slate-400">Extracted Form</div>
+            <div id="window-current-form" class="text-sm font-mono font-bold text-indigo-300 mt-1">--</div>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+            <div class="text-xs font-medium text-slate-400">Historical Count in Corpus</div>
+            <div id="window-current-freq" class="text-sm font-mono font-bold text-emerald-400 mt-1">0 times</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: Frequency Table & Chart Analysis -->
+    <section id="section-analysis" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Frequency Table (2 Cols) -->
+        <div class="lg:col-span-2 bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                <i class="fa-solid fa-table-list text-emerald-400"></i>
+                N-Gram Frequency Table
+              </h3>
+              <p class="text-xs text-slate-400">Click any row to highlight all occurrences in corpus text below.</p>
+            </div>
+            <!-- Search -->
+            <input id="ngram-search" type="text" oninput="filterNGramTable()" placeholder="Filter N-grams..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-full sm:w-48">
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-[380px] overflow-y-auto">
+            <table class="w-full text-left border-collapse">
+              <thead class="bg-slate-900 text-slate-400 text-xs uppercase font-mono sticky top-0 z-10">
+                <tr>
+                  <th class="py-3 px-4">#</th>
+                  <th class="py-3 px-4">N-Gram Token(s)</th>
+                  <th class="py-3 px-4 text-right">Count</th>
+                  <th class="py-3 px-4 text-right">Rel Frequency (MLE)</th>
+                </tr>
+              </thead>
+              <tbody id="ngram-table-body" class="divide-y divide-slate-800/60 font-mono text-xs">
+                <!-- Rows injected dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top N Bar Chart (1 Col) -->
+        <div class="lg:col-span-1 bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-bar text-cyan-400"></i>
+              Top 10 Frequency Distribution
+            </h3>
+            <p class="text-xs text-slate-400">Most frequent N-Grams in current dataset</p>
+          </div>
+          <div class="relative w-full h-[300px]">
+            <canvas id="ngram-chart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Highlighted Corpus Interactive Viewer -->
+      <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+            <i class="fa-solid fa-highlighter text-yellow-400"></i>
+            Interactive Corpus Highlighter
+          </h3>
+          <span id="highlight-status" class="text-xs font-mono text-slate-400">Click an N-gram in table above to highlight occurrences</span>
+        </div>
+        <div id="highlighted-corpus-view" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs font-mono leading-relaxed text-slate-300 max-h-[220px] overflow-y-auto">
+          <!-- Text with span highlights -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Next Word Language Model Predictor & Generator -->
+    <section id="section-predictor" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Next Word Prediction Panel -->
+        <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-5">
+          <div>
+            <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+              <i class="fa-solid fa-bullseye text-cyan-400"></i>
+              Next Word Probability Predictor
+            </h3>
+            <p class="text-xs text-slate-400">Given a context prompt of size <span class="font-mono text-indigo-300" id="lm-context-size">N-1</span>, calculate next word likelihoods.</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-xs font-medium text-slate-300">Enter Context Words:</label>
+            <div class="flex gap-2">
+              <input id="lm-prompt-input" type="text" oninput="predictNextWord()" placeholder="Type starting context..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-500">
+              <button onclick="predictNextWord()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-semibold">
+                Predict
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500" id="lm-context-hint">Context prompt needs at least <span id="lm-required-words">1</span> word(s) for Bigram mode.</p>
+          </div>
+
+          <!-- Probability Distribution List -->
+          <div class="space-y-2">
+            <div class="text-xs font-semibold text-slate-300 flex justify-between">
+              <span>Next Candidate Words P(w | Context)</span>
+              <span id="lm-total-candidates" class="text-slate-500 font-mono">0 matches</span>
+            </div>
+
+            <div id="lm-predictions-list" class="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+              <!-- Bar predictions rendered dynamically -->
+              <div class="text-xs text-slate-500 italic p-3 text-center bg-slate-950/40 rounded-xl">
+                Type context above to compute conditional probabilities
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Markov Chain Text Generator -->
+        <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-5 flex flex-col justify-between">
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+              <i class="fa-solid fa-robot text-indigo-400"></i>
+              N-Gram Markov Text Generator
+            </h3>
+            <p class="text-xs text-slate-400">Generate synthetic text sequence word-by-word based on N-gram probabilities from your corpus.</p>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Length (words):</label>
+                <input id="gen-length" type="number" min="5" max="50" value="15" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white font-mono">
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Sampling Strategy:</label>
+                <select id="gen-strategy" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white font-mono">
+                  <option value="probabilistic">Probabilistic (Weighted)</option>
+                  <option value="greedy">Greedy (Max Probability)</option>
+                </select>
+              </div>
+            </div>
+
+            <button onclick="generateTextFromLM()" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-sparkles"></i> Generate Text Sequence
+            </button>
+          </div>
+
+          <div class="space-y-2 pt-3 border-t border-slate-800">
+            <div class="text-xs font-semibold text-slate-300">Generated Output:</div>
+            <div id="gen-output" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs font-mono text-cyan-200 min-h-[110px] leading-relaxed">
+              <span class="text-slate-600 italic">Click "Generate Text Sequence" above...</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 5: Concepts & Formulas Reference -->
+    <section id="section-guide" class="hidden space-y-6">
+      <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 space-y-6">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-graduation-cap text-cyan-400"></i>
+            Understanding Unigrams, Bigrams & N-Grams
+          </h2>
+          <p class="text-xs text-slate-400">Core theoretical concepts in Natural Language Processing and probabilistic language models.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Unigram Card -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-mono font-bold text-sm">
+              N=1
+            </div>
+            <h3 class="text-sm font-bold text-white">Unigram Model</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Considers each word independently without context. Assumes occurrence of a word does not depend on preceding words (Bag-of-Words assumption).
+            </p>
+            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] font-mono text-emerald-300">
+              P(w₁, w₂, w₃) = P(w₁) × P(w₂) × P(w₃)
+            </div>
+          </div>
+
+          <!-- Bigram Card -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center font-mono font-bold text-sm">
+              N=2
+            </div>
+            <h3 class="text-sm font-bold text-white">Bigram Model</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Considers pairs of consecutive words. Employs a first-order Markov assumption where probability of a word depends only on its immediately previous word.
+            </p>
+            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] font-mono text-cyan-300">
+              P(wᵢ | wᵢ₋₁) = Count(wᵢ₋₁, wᵢ) / Count(wᵢ₋₁)
+            </div>
+          </div>
+
+          <!-- N-gram Card -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-mono font-bold text-sm">
+              N=k
+            </div>
+            <h3 class="text-sm font-bold text-white">General N-Gram</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Extends context to <span class="font-mono">N-1</span> previous history tokens. Higher N captures richer context but suffers from data sparsity if corpus is small.
+            </p>
+            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] font-mono text-indigo-300">
+              P(wᵢ | wᵢ₋ₙ₊₁...wᵢ₋₁)
+            </div>
+          </div>
+        </div>
+
+        <!-- Formula Explanations -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider">Maximum Likelihood Estimation (MLE) Formula</h4>
+          <div class="text-xs text-slate-400 space-y-2">
+            <p>
+              In an N-gram language model, the conditional probability of target token $w_n$ given history $w_1 \dots w_{n-1}$ is calculated by dividing frequency counts:
+            </p>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-cyan-300 text-center">
+              P_MLE( w_i | w_{i-N+1} \dots w_{i-1} ) = Count( w_{i-N+1} \dots w_i ) / Count( w_{i-N+1} \dots w_{i-1} )
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* PRESET CORPORA DATASETS */
+    const PRESET_CORPORA = {
+      nlp_basics: `Natural language processing (NLP) is a subfield of artificial intelligence and computer science. It focuses on the interactions between computers and human language. A language model predicts the next word in a sequence based on previous tokens. Unigrams count single words, bigrams count word pairs, and trigrams look at sequences of three words. N-gram models use maximum likelihood estimation to compute conditional probabilities for sequence prediction. Artificial intelligence relies heavily on robust language processing techniques.`,
+      
+      shakespeare: `To be or not to be, that is the question. Whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles and by opposing end them. To die, to sleep, no more; and by a sleep to say we end the heart-ache and the thousand natural shocks that flesh is heir to.`,
+      
+      speech: `I have a dream that one day this nation will rise up and live out the true meaning of its creed. I have a dream that one day on the red hills of Georgia the sons of former slaves and the sons of former slave owners will be able to sit down together at the table of brotherhood. I have a dream today!`,
+      
+      rhyme: `Twinkle twinkle little star, how I wonder what you are. Up above the world so high, like a diamond in the sky. Twinkle twinkle little star, how I wonder what you are.`
+    };
+
+    /* APPLICATION STATE */
+    let currentN = 2; // Default N=2 (Bigram)
+    let rawCorpusText = PRESET_CORPORA.nlp_basics;
+    let tokens = [];
+    let ngramsMap = new Map(); // Map: ngram_string => { count, tokensArray }
+    let totalNgramsCount = 0;
+    
+    // Sliding Window Player State
+    let windowStep = 0;
+    let isPlaying = false;
+    let playInterval = null;
+
+    // Chart.js Instance
+    let chartInstance = null;
+
+    /* INITIALIZATION */
+    window.onload = function () {
+      document.getElementById('corpus-textarea').value = rawCorpusText;
+      reprocessCorpus();
+      initChart();
+    };
+
+    /* TAB NAVIGATION FUNCTION */
+    function switchTab(tabId) {
+      const tabs = ['corpus', 'visualizer', 'analysis', 'predictor', 'guide'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        const sec = document.getElementById(`section-${t}`);
+        if (t === tabId) {
+          btn.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 bg-indigo-600 text-white shadow-md";
+          sec.classList.remove('hidden');
+        } else {
+          btn.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/50";
+          sec.classList.add('hidden');
+        }
+      });
+
+      // Tab specific triggers
+      if (tabId === 'visualizer') {
+        resetWindowStep();
+      } else if (tabId === 'analysis') {
+        updateChart();
+      } else if (tabId === 'predictor') {
+        predictNextWord();
+      }
+    }
+
+    /* N VALUE SELECTION */
+    function updateN(val) {
+      currentN = parseInt(val);
+      document.getElementById('n-value-badge').innerText = currentN;
+      document.getElementById('n-slider').value = currentN;
+
+      const nLabels = { 1: '(Unigram)', 2: '(Bigram)', 3: '(Trigram)', 4: '(4-Gram)', 5: '(5-Gram)' };
+      document.getElementById('n-type-label').innerText = nLabels[currentN] || `(${currentN}-Gram)`;
+
+      reprocessCorpus();
+    }
+
+    function setN(val) {
+      updateN(val);
+    }
+
+    /* PRESET LOADER */
+    function loadPreset(key) {
+      if (PRESET_CORPORA[key]) {
+        rawCorpusText = PRESET_CORPORA[key];
+        document.getElementById('corpus-textarea').value = rawCorpusText;
+        reprocessCorpus();
+      }
+    }
+
+    /* FILE UPLOAD HANDLER */
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        rawCorpusText = evt.target.result;
+        document.getElementById('corpus-textarea').value = rawCorpusText;
+        reprocessCorpus();
+      };
+      reader.readAsText(file);
+    }
+
+    function onCorpusTextChange() {
+      rawCorpusText = document.getElementById('corpus-textarea').value;
+    }
+
+    /* TOKENIZATION & PREPROCESSING PIPELINE */
+    function reprocessCorpus() {
+      let text = document.getElementById('corpus-textarea').value || "";
+
+      const doLowercase = document.getElementById('prep-lowercase').checked;
+      const doStripPunct = document.getElementById('prep-punctuation').checked;
+      const doPadding = document.getElementById('prep-padding').checked;
+
+      if (doLowercase) {
+        text = text.toLowerCase();
+      }
+
+      if (doPadding) {
+        // Simple sentence boundary padding logic
+        const sentences = text.split(/(?<=[.?!])\s+/);
+        text = sentences.map(s => `<s> ${s} </s>`).join(" ");
+      }
+
+      if (doStripPunct) {
+        // Retain keep space and alphanumeric, keep <s> </s> if enabled
+        text = text.replace(/[^a-zA-Z0-9\s<>\/]/g, "");
+      }
+
+      // Split by whitespace
+      tokens = text.trim().split(/\s+/).filter(t => t.length > 0);
+
+      // Extract N-Grams
+      extractNGrams();
+
+      // Update UI statistics
+      document.getElementById('stat-words-badge').innerText = `${tokens.length} Tokens`;
+      const uniqueVocab = new Set(tokens).size;
+      document.getElementById('stat-vocab-badge').innerText = `${uniqueVocab} Unique Vocab`;
+
+      // Update dependent visual components
+      renderTokenStream();
+      renderNGramTable();
+      updateChart();
+      renderHighlightedCorpusText();
+      resetWindowStep();
+      updatePredictorUI();
+    }
+
+    /* N-GRAM EXTRACTION ENGINE */
+    function extractNGrams() {
+      ngramsMap.clear();
+      totalNgramsCount = 0;
+
+      if (tokens.length < currentN) return;
+
+      for (let i = 0; i <= tokens.length - currentN; i++) {
+        const slice = tokens.slice(i, i + currentN);
+        const ngramKey = slice.join(" ");
+
+        if (!ngramsMap.has(ngramKey)) {
+          ngramsMap.set(ngramKey, { count: 1, tokens: slice });
+        } else {
+          ngramsMap.get(ngramKey).count++;
+        }
+        totalNgramsCount++;
+      }
+    }
+
+    /* RENDER TOKEN STREAM (SLIDING WINDOW TAB) */
+    function renderTokenStream() {
+      const container = document.getElementById('token-stream-container');
+      container.innerHTML = '';
+
+      tokens.forEach((tok, idx) => {
+        const span = document.createElement('span');
+        span.id = `token-span-${idx}`;
+        span.innerText = tok;
+        span.className = "px-2 py-1 rounded border border-slate-800 bg-slate-900 text-slate-300 font-mono transition-all text-xs";
+        container.appendChild(span);
+      });
+
+      document.getElementById('window-max-steps').innerText = Math.max(0, tokens.length - currentN + 1);
+      document.getElementById('window-step-range').max = Math.max(0, tokens.length - currentN);
+    }
+
+    /* SLIDING WINDOW STEPPER LOGIC */
+    function setWindowStep(step) {
+      const maxSteps = Math.max(0, tokens.length - currentN);
+      windowStep = Math.max(0, Math.min(step, maxSteps));
+
+      document.getElementById('window-step-num').innerText = windowStep + 1;
+      document.getElementById('window-step-range').value = windowStep;
+
+      // Clear highlights
+      tokens.forEach((_, idx) => {
+        const el = document.getElementById(`token-span-${idx}`);
+        if (el) {
+          el.className = "px-2 py-1 rounded border border-slate-800 bg-slate-900 text-slate-300 font-mono transition-all text-xs";
+        }
+      });
+
+      if (tokens.length >= currentN) {
+        const activeSlice = tokens.slice(windowStep, windowStep + currentN);
+        const ngramStr = activeSlice.join(" ");
+
+        // Highlight active window tokens
+        for (let i = 0; i < currentN; i++) {
+          const el = document.getElementById(`token-span-${windowStep + i}`);
+          if (el) {
+            el.className = "px-2 py-1 rounded border border-cyan-500 bg-cyan-500/20 text-cyan-300 font-mono font-bold transition-all text-xs shadow-md shadow-cyan-500/20";
+          }
+        }
+
+        // Scroll token into view automatically
+        const activeStartEl = document.getElementById(`token-span-${windowStep}`);
+        if (activeStartEl) {
+          activeStartEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        document.getElementById('window-ngram-preview').innerText = `"${ngramStr}"`;
+        document.getElementById('window-current-tokens').innerText = `[ ${activeSlice.join(', ')} ]`;
+        document.getElementById('window-current-form').innerText = `"${ngramStr}"`;
+
+        const freqObj = ngramsMap.get(ngramStr);
+        document.getElementById('window-current-freq').innerText = `${freqObj ? freqObj.count : 0} times`;
+      }
+    }
+
+    function stepWindow(dir) {
+      setWindowStep(windowStep + dir);
+    }
+
+    function resetWindowStep() {
+      if (isPlaying) togglePlayWindow();
+      setWindowStep(0);
+    }
+
+    function togglePlayWindow() {
+      isPlaying = !isPlaying;
+      const playIcon = document.getElementById('play-icon');
+      const playText = document.getElementById('play-text');
+
+      if (isPlaying) {
+        playIcon.className = "fa-solid fa-pause";
+        playText.innerText = "Pause";
+        playInterval = setInterval(() => {
+          const maxSteps = Math.max(0, tokens.length - currentN);
+          if (windowStep >= maxSteps) {
+            setWindowStep(0);
+          } else {
+            stepWindow(1);
+          }
+        }, 600);
+      } else {
+        playIcon.className = "fa-solid fa-play";
+        playText.innerText = "Auto Play";
+        clearInterval(playInterval);
+      }
+    }
+
+    /* FREQUENCY TABLE RENDERER */
+    function renderNGramTable(filter = "") {
+      const tbody = document.getElementById('ngram-table-body');
+      tbody.innerHTML = '';
+
+      const sorted = Array.from(ngramsMap.entries())
+        .map(([ngram, data]) => ({ ngram, count: data.count }))
+        .sort((a, b) => b.count - a.count);
+
+      const filtered = sorted.filter(item => item.ngram.toLowerCase().includes(filter.toLowerCase()));
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-500 italic">No N-grams found matching query</td></tr>`;
+        return;
+      }
+
+      filtered.forEach((item, index) => {
+        const relFreq = totalNgramsCount > 0 ? (item.count / totalNgramsCount).toFixed(4) : "0.0000";
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/60 transition cursor-pointer group";
+        tr.onclick = () => highlightNGramInCorpus(item.ngram);
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 text-slate-500">${index + 1}</td>
+          <td class="py-2.5 px-4 text-slate-200 group-hover:text-cyan-300 font-semibold">${escapeHtml(item.ngram)}</td>
+          <td class="py-2.5 px-4 text-right font-bold text-emerald-400">${item.count}</td>
+          <td class="py-2.5 px-4 text-right text-indigo-300">${relFreq}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterNGramTable() {
+      const q = document.getElementById('ngram-search').value;
+      renderNGramTable(q);
+    }
+
+    /* CHART.JS DATA VISUALIZATION */
+    function initChart() {
+      const ctx = document.getElementById('ngram-chart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Frequency Count',
+            data: [],
+            backgroundColor: 'rgba(2, 132, 199, 0.6)',
+            borderColor: 'rgba(56, 189, 248, 1)',
+            borderWidth: 1,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#94a3b8', font: { size: 10, family: 'Fira Code' } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { color: '#94a3b8', font: { size: 10 } },
+              grid: { color: 'rgba(51, 65, 85, 0.4)' }
+            }
+          }
+        }
+      });
+    }
+
+    function updateChart() {
+      if (!chartInstance) return;
+
+      const top10 = Array.from(ngramsMap.entries())
+        .map(([ngram, data]) => ({ ngram, count: data.count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      chartInstance.data.labels = top10.map(d => d.ngram);
+      chartInstance.data.datasets[0].data = top10.map(d => d.count);
+      chartInstance.update();
+    }
+
+    /* INTERACTIVE CORPUS HIGHLIGHTER */
+    function renderHighlightedCorpusText(highlightTarget = null) {
+      const container = document.getElementById('highlighted-corpus-view');
+      const text = tokens.join(" ");
+
+      if (!highlightTarget) {
+        container.innerText = text;
+        document.getElementById('highlight-status').innerText = 'Click an N-gram in table above to highlight occurrences';
+        return;
+      }
+
+      // Escape regex special chars
+      const escaped = highlightTarget.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
+
+      let matchesCount = 0;
+      const highlightedText = text.replace(regex, (match) => {
+        matchesCount++;
+        return `<mark class="highlight-ngram">${match}</mark>`;
+      });
+
+      container.innerHTML = highlightedText;
+      document.getElementById('highlight-status').innerText = `Highlighted ${matchesCount} occurrence(s) of "${highlightTarget}"`;
+    }
+
+    function highlightNGramInCorpus(ngram) {
+      renderHighlightedCorpusText(ngram);
+    }
+
+    /* TAB 4: NEXT-WORD PREDICTOR & MARKOV LANGUAGE MODEL */
+    function updatePredictorUI() {
+      const requiredContextWords = Math.max(1, currentN - 1);
+      document.getElementById('lm-context-size').innerText = `N-1 = ${requiredContextWords} word(s)`;
+      document.getElementById('lm-required-words').innerText = requiredContextWords;
+    }
+
+    function predictNextWord() {
+      const inputVal = document.getElementById('lm-prompt-input').value.trim();
+      const container = document.getElementById('lm-predictions-list');
+      container.innerHTML = '';
+
+      if (currentN === 1) {
+        // Unigram prediction mode (Frequency over all vocabulary)
+        const total = tokens.length;
+        const vocabCounts = new Map();
+        tokens.forEach(t => vocabCounts.set(t, (vocabCounts.get(t) || 0) + 1));
+
+        const sorted = Array.from(vocabCounts.entries())
+          .map(([word, count]) => ({ word, prob: count / total, count }))
+          .sort((a, b) => b.prob - a.prob)
+          .slice(0, 8);
+
+        renderProbabilitiesList(sorted, container);
+        document.getElementById('lm-total-candidates').innerText = `${vocabCounts.size} unigram words`;
+        return;
+      }
+
+      // N-gram conditional prediction P(w_n | w_1...w_{n-1})
+      const reqWords = currentN - 1;
+      const promptTokens = inputVal.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+
+      if (promptTokens.length < reqWords) {
+        container.innerHTML = `<div class="text-xs text-slate-500 italic p-3 text-center bg-slate-950/40 rounded-xl">Please enter at least ${reqWords} word(s) matching context history</div>`;
+        document.getElementById('lm-total-candidates').innerText = `0 matches`;
+        return;
+      }
+
+      // Take last N-1 tokens as history context
+      const contextSlice = promptTokens.slice(promptTokens.length - reqWords);
+      const contextKey = contextSlice.join(" ");
+
+      // Find all N-grams starting with contextKey
+      const candidates = [];
+      let contextTotalCount = 0;
+
+      ngramsMap.forEach((data, ngramKey) => {
+        const parts = ngramKey.split(" ");
+        const prefix = parts.slice(0, reqWords).join(" ");
+        const targetWord = parts[parts.length - 1];
+
+        if (prefix === contextKey) {
+          candidates.push({ word: targetWord, count: data.count });
+          contextTotalCount += data.count;
+        }
+      });
+
+      if (candidates.length === 0) {
+        container.innerHTML = `<div class="text-xs text-amber-400/80 italic p-3 text-center bg-amber-500/10 rounded-xl border border-amber-500/20">Zero N-gram count! Context "${contextKey}" was not observed in dataset.</div>`;
+        document.getElementById('lm-total-candidates').innerText = `0 matches`;
+        return;
+      }
+
+      // Compute conditional probability MLE
+      const probList = candidates.map(c => ({
+        word: c.word,
+        count: c.count,
+        prob: c.count / contextTotalCount
+      })).sort((a, b) => b.prob - a.prob);
+
+      renderProbabilitiesList(probList, container);
+      document.getElementById('lm-total-candidates').innerText = `${probList.length} candidate(s)`;
+    }
+
+    function renderProbabilitiesList(list, container) {
+      list.forEach(item => {
+        const pct = (item.prob * 100).toFixed(1);
+        const div = document.createElement('div');
+        div.className = "bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1";
+        div.innerHTML = `
+          <div class="flex justify-between text-xs font-mono">
+            <span class="text-slate-200 font-bold flex items-center gap-1">
+              <i class="fa-solid fa-angle-right text-cyan-400 text-[10px]"></i> "${escapeHtml(item.word)}"
+            </span>
+            <span class="text-indigo-300">${pct}% <span class="text-slate-500 text-[10px]">(${item.count} count)</span></span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div class="bg-gradient-to-r from-cyan-500 to-indigo-500 h-full rounded-full" style="width: ${pct}%"></div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    /* MARKOV CHAIN GENERATOR */
+    function generateTextFromLM() {
+      const length = parseInt(document.getElementById('gen-length').value) || 15;
+      const strategy = document.getElementById('gen-strategy').value;
+
+      if (tokens.length < currentN) {
+        document.getElementById('gen-output').innerText = "Corpus text is too short for N=" + currentN;
+        return;
+      }
+
+      // Pick a random seed start
+      const randomStartIdx = Math.floor(Math.random() * (tokens.length - currentN));
+      const resultTokens = tokens.slice(randomStartIdx, randomStartIdx + (currentN - 1));
+
+      for (let step = 0; step < length; step++) {
+        const reqWords = Math.max(1, currentN - 1);
+        const contextKey = resultTokens.slice(resultTokens.length - reqWords).join(" ");
+
+        // Match possible next words
+        const candidates = [];
+        ngramsMap.forEach((data, ngramKey) => {
+          const parts = ngramKey.split(" ");
+          const prefix = parts.slice(0, reqWords).join(" ");
+          const targetWord = parts[parts.length - 1];
+
+          if (prefix === contextKey) {
+            candidates.push({ word: targetWord, count: data.count });
+          }
+        });
+
+        if (candidates.length === 0) {
+          // Pick random fallback word if sequence gets stuck
+          const randomFallback = tokens[Math.floor(Math.random() * tokens.length)];
+          resultTokens.push(randomFallback);
+        } else {
+          let chosenWord = "";
+          if (strategy === 'greedy') {
+            // Pick highest count
+            candidates.sort((a, b) => b.count - a.count);
+            chosenWord = candidates[0].word;
+          } else {
+            // Weighted probabilistic sampling
+            const total = candidates.reduce((acc, c) => acc + c.count, 0);
+            let rand = Math.random() * total;
+            for (let c of candidates) {
+              rand -= c.count;
+              if (rand <= 0) {
+                chosenWord = c.word;
+                break;
+              }
+            }
+            if (!chosenWord) chosenWord = candidates[0].word;
+          }
+          resultTokens.push(chosenWord);
+        }
+      }
+
+      document.getElementById('gen-output').innerText = resultTokens.join(" ");
+    }
+
+    /* UTILITY: HTML ESCAPER */
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>
